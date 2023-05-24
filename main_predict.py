@@ -2,8 +2,9 @@ import yaml
 import torch
 import torchvision
 from pathlib import Path
+
+import object_creator
 import utils
-import create_effnet
 from torchvision import transforms
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ img_path = img_path / "TES"
 
 def main():
     # Create a model in which state dict will be loaded
-    weights, model, preprocess = create_effnet.create_efficientnet_model(MODEL_VERSION, device)
+    weights, model, preprocess = data_setup.create_efficientnet_model(MODEL_VERSION, device)
 
     # Recreate preset transforms manually to control resize and crop sizes
     my_normalize = transforms.Normalize(
@@ -44,7 +45,7 @@ def main():
     class_names = torchvision.datasets.ImageFolder(str(img_path)).classes
 
     # Change classifier to have number of output layers equal to number of classes, then load state dict of saved model
-    model.classifier = create_effnet.change_classifier(in_features=1280, out_features=len(class_names), device=device)
+    model.classifier = data_setup.change_classifier(in_features=1280, out_features=len(class_names), device=device)
     model.load_state_dict(torch.load(MODEL_PATH))
 
     img = Image.open(image_path)  # Create PIL object of the image

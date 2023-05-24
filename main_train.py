@@ -1,23 +1,13 @@
-import utils
-import torch
-import torchvision
-from torchvision.models import efficientnet_v2_m, EfficientNet_V2_M_Weights
-from torchvision.io import read_image
-import torchinfo
-from torchinfo import summary
-import data_setup
-import engine
-from pathlib import Path
-from torch import nn
-from timeit import default_timer as timer
-from torchvision import transforms
-from torch.utils.tensorboard import SummaryWriter
-import tensorboard
-import warnings
 import multiprocessing
-import create_effnet
-import configparser
+from pathlib import Path
+from timeit import default_timer as timer
+import torch
 import yaml
+from torch import nn
+from torchvision import transforms
+import object_creator
+import engine
+import utils
 
 # Open config files and set variables
 CONFIG_FILENAME = "config.yaml"
@@ -41,12 +31,10 @@ def main():
     device = utils.set_device()
 
     # Create model object and preset weights and transforms for transfer learning
-    weights, model, preprocess = create_effnet.create_efficientnet_model(model_version=MODEL_VERSION, device=device)
+    weights, model, preprocess = data_setup.create_efficientnet_model(model_version=MODEL_VERSION, device=device)
 
     data_path = Path("data/")
     image_path = data_path / "TES"
-    # train_dir = image_path / "train"
-    # test_dir = image_path / "test"
 
     # Recreate preset normalize and transforms to control resize and crop values.
     my_normalize = transforms.Normalize(
@@ -73,7 +61,7 @@ def main():
 
     num_classes = len(class_names)
     # Change classifier to have number of output layers equal to number of classes
-    model.classifier = create_effnet.change_classifier(in_features=1280, out_features=num_classes, device=device)
+    model.classifier = data_setup.change_classifier(in_features=1280, out_features=num_classes, device=device)
 
     # Set up loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
