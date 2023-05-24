@@ -67,18 +67,11 @@ def main():
 
     run_button.grid(row=3, column=1, padx=10, pady=10, ipadx=10, ipady=5)
     save_button.grid(row=3, column=2, padx=10, pady=10, ipadx=10, ipady=5)
-    # test_button = tk.Button(root, text="test")
-    # test_button.grid(row=3, column=2)
 
     root.resizable(False, False)
     root.mainloop()
 
     return image_path
-
-
-def test_fn(new_value="123"):
-    global image_path
-    image_path = new_value
 
 
 def set_parameter(parameter: str, entry: tk.Entry) -> None:

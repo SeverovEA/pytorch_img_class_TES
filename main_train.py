@@ -26,14 +26,14 @@ with open(SETTINGS_FILENAME, "r") as stream:
     settings_dict = yaml.safe_load(stream)
 with open(CONFIG_FILENAME, "r") as stream:
     config_dict = yaml.safe_load(stream)
-NUM_EPOCHS = int(config_dict["Hyperparameters"]["NUM_EPOCHS"])
-LEARNING_RATE = int(config_dict["Hyperparameters"]["LEARNING_RATE"])
-BATCH_SIZE = int(config_dict["Hyperparameters"]["BATCH_SIZE"])
-EXP_NAME = config_dict["Writer parameters"]["EXP_NAME"]
-MODEL_VERSION = config_dict["Writer parameters"]["MODEL_VERSION"]
+NUM_EPOCHS = int(config_dict["NUM_EPOCHS"])
+LEARNING_RATE = int(config_dict["LEARNING_RATE"])
+BATCH_SIZE = int(config_dict["BATCH_SIZE"])
+EXP_NAME = config_dict["EXP_NAME"]
+MODEL_VERSION = config_dict["MODEL_VERSION"]
 MODEL_NAME = f"efficientnet_{MODEL_VERSION.lower()}"
-EXTRA = config_dict["Writer parameters"]["EXTRA"]
-MODEL_SAVE_DIR = config_dict["Saving parameters"]["MODEL_SAVE_DIR"]
+EXTRA = config_dict["EXTRA"]
+MODEL_SAVE_DIR = config_dict["MODEL_SAVE_DIR"]
 
 
 def main():

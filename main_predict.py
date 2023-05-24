@@ -17,8 +17,8 @@ with open(SETTINGS_FILENAME, "r") as stream:
     settings_dict = yaml.safe_load(stream)
 with open(CONFIG_FILENAME, "r") as stream:
     config_dict = yaml.safe_load(stream)
-MODEL_VERSION = config_dict["Writer parameters"]["MODEL_VERSION"]
-DATA_DIR = config_dict["Paths"]["DATA_DIR"]
+MODEL_VERSION = config_dict["MODEL_VERSION"]
+DATA_DIR = config_dict["DATA_DIR"]
 MODEL_PATH = settings_dict["model_path"]
 image_path = settings_dict["img_path"]
 img_path = Path(DATA_DIR)

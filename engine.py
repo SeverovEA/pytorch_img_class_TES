@@ -1,12 +1,12 @@
 """
 Contains functions for training and testing a PyTorch model.
 """
-import torch
-
-from tqdm.auto import tqdm, trange
 from typing import Dict, List, Tuple
-from torch.utils.tensorboard import SummaryWriter
+
+import torch
 import torchvision
+from torch.utils.tensorboard import SummaryWriter
+from tqdm.auto import tqdm
 
 
 def train_step(model: torch.nn.Module,
