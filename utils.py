@@ -1,36 +1,37 @@
 """
 Contains various utility functions.
 """
-import torch
-from pathlib import Path
-from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
-import os
 import warnings
+from pathlib import Path
+from typing import Tuple, List
+
+import torch
+import yaml
 
 
-def save_model(model: torch.nn.Module,
-               target_dir: str,
-               model_name: str):
+def save_model(
+        model: torch.nn.Module,
+        target_dir: str,
+        model_name: str
+):
     """Saves a PyTorch model to a target directory.
 
     Args:
     model: A target PyTorch model to save.
-    target_dir: A directory for saving the model to.
-    model_name: A filename for the saved model. Should include
-      either ".pth" or ".pt" as the file extension.
+    target_dir: A path to directory for saving the model to.
+    model_name: A filename for the saved model. Must be ".pth" or ".pt" as the file extension.
 
     Example usage:
     save_model(model=model_0,
                target_dir="models",
-               model_name="05_going_modular_tingvgg_model.pth")
+               model_name="model_name.pth")
     """
-    # Create target directory
+    # Create target directory if it doesn't exist
     target_dir_path = Path(target_dir)
     target_dir_path.mkdir(parents=True,
                           exist_ok=True)
 
-    # Create model save path
+    # Check that extension is correct and create model save path
     assert model_name.endswith(".pth") or model_name.endswith(".pt"), "model_name should end with '.pt' or '.pth'"
     model_save_path = target_dir_path / model_name
 
@@ -40,47 +41,7 @@ def save_model(model: torch.nn.Module,
                f=model_save_path)
 
 
-def create_writer(experiment_name: str,
-                  model_name: str,
-                  extra: str = None) -> torch.utils.tensorboard.writer.SummaryWriter:
-    """Creates a torch.utils.tensorboard.writer.SummaryWriter instance saving to a specific log_dir.
-
-    log_dir is a combination of runs/timestamp/experiment_name/model_name/extra.
-
-    Where timestamp is the current date in YYYY-MM-DD format.
-
-    Args:
-        experiment_name (str): Name of experiment.
-        model_name (str): Name of model.
-        extra (str, optional): Anything extra to add to the directory. Defaults to None.
-
-    Returns:
-        torch.utils.tensorboard.writer.SummaryWriter: Instance of a writer saving to log_dir.
-
-    Example usage:
-        # Create a writer saving to "runs/2022-06-04/data_10_percent/effnetb2/5_epochs/"
-        writer = create_writer(experiment_name="data_10_percent",
-                               model_name="effnetb2",
-                               extra="5_epochs")
-        # The above is the same as:
-        writer = SummaryWriter(log_dir="runs/2022-06-04/data_10_percent/effnetb2/5_epochs/")
-    """
-
-    # Get timestamp of current date (all experiments on certain day live in same folder)
-    timestamp = datetime.now().strftime("%Y-%m-%d")
-    experiment_name += datetime.now().strftime("_%H-%M-%S")
-
-    if extra:
-        # Create log directory path
-        log_dir = os.path.join("runs", timestamp, experiment_name, model_name, extra)
-    else:
-        log_dir = os.path.join("runs", timestamp, experiment_name, model_name)
-
-    print(f"[INFO] Created SummaryWriter, saving to: {log_dir}...")
-    return SummaryWriter(log_dir=log_dir)
-
-
-def set_seeds(seed: int = 42):
+def set_seeds(seed: int = 42) -> None:
     """Sets random sets for torch operations.
 
     Args:
@@ -92,8 +53,44 @@ def set_seeds(seed: int = 42):
     torch.cuda.manual_seed(seed)
 
 
-def set_device():
+def set_device() -> str:
+    """
+    Returns "cuda" by default. If cuda is not available returns "cpu" and raises a warning.
+    """
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == "cpu":
         warnings.warn("CUDA is not available, something's wrong :-(")
     return device
+
+
+def change_classifier(
+        in_features: int,
+        out_features: int,
+        device: str,
+        dropout_rate: float = 0.2
+) -> torch.nn.Sequential:
+    """
+    Changes number of classifier output features.
+    Optionally changes dropout rate.
+
+    :return: Changed classifier.
+    """
+    classifier = torch.nn.Sequential(
+        torch.nn.Dropout(p=dropout_rate, inplace=True),
+        torch.nn.Linear(
+            in_features=in_features,
+            out_features=out_features,
+            bias=True,
+        )).to(device)
+    return classifier
+
+
+def yamls_to_dict(filepaths: Tuple[str, ...]) -> List[dict]:
+    """
+    Takes tuple of paths .yaml files, returns list of according dictionaries.
+    """
+    dicts_list = []
+    for path in filepaths:
+        with open(path, "r") as stream:
+            dicts_list.append(yaml.safe_load(stream))
+    return dicts_list

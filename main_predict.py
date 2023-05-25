@@ -1,23 +1,18 @@
-import yaml
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import torch
 import torchvision
-from pathlib import Path
+from PIL import Image
+from torchvision import transforms
 
 import object_creator
 import utils
-from torchvision import transforms
-from PIL import Image
-import matplotlib.pyplot as plt
 
 device = utils.set_device()
 
 # Open config files and set variables
-CONFIG_FILENAME = "config.yaml"
-SETTINGS_FILENAME = "settings.yaml"
-with open(SETTINGS_FILENAME, "r") as stream:
-    settings_dict = yaml.safe_load(stream)
-with open(CONFIG_FILENAME, "r") as stream:
-    config_dict = yaml.safe_load(stream)
+config_dict, settings_dict = utils.yamls_to_dict(("config.yaml", "settings.yaml"))
 MODEL_VERSION = config_dict["MODEL_VERSION"]
 DATA_DIR = config_dict["DATA_DIR"]
 MODEL_PATH = settings_dict["model_path"]
@@ -28,7 +23,7 @@ img_path = img_path / "TES"
 
 def main():
     # Create a model in which state dict will be loaded
-    weights, model, preprocess = data_setup.create_efficientnet_model(MODEL_VERSION, device)
+    weights, model, preprocess = object_creator.create_efficientnet_model(MODEL_VERSION, device)
 
     # Recreate preset transforms manually to control resize and crop sizes
     my_normalize = transforms.Normalize(
@@ -45,7 +40,7 @@ def main():
     class_names = torchvision.datasets.ImageFolder(str(img_path)).classes
 
     # Change classifier to have number of output layers equal to number of classes, then load state dict of saved model
-    model.classifier = data_setup.change_classifier(in_features=1280, out_features=len(class_names), device=device)
+    model.classifier = utils.change_classifier(in_features=1280, out_features=len(class_names), device=device)
     model.load_state_dict(torch.load(MODEL_PATH))
 
     img = Image.open(image_path)  # Create PIL object of the image

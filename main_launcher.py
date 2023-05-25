@@ -1,19 +1,15 @@
-import tkinter as tk
-from tkinter.filedialog import askopenfilename
-import subprocess
-import yaml
 import os
-import configparser
+import subprocess
+import tkinter as tk
 from pathlib import Path
+from tkinter.filedialog import askopenfilename
 
-CONFIG_FILENAME = "config.yaml"
-SETTINGS_FILENAME = "settings.yaml"
+import yaml
+
+import utils
+
+config_dict, settings_dict = utils.yamls_to_dict(("config.yaml", "settings.yaml"))
 image_path = ""
-
-with open(SETTINGS_FILENAME, "r") as stream:
-    settings_dict = yaml.safe_load(stream)
-with open(CONFIG_FILENAME, "r") as stream:
-    config_dict = yaml.safe_load(stream)
 
 
 def main():
@@ -72,15 +68,6 @@ def main():
     root.mainloop()
 
     return image_path
-
-
-def set_parameter(parameter: str, entry: tk.Entry) -> None:
-    value = entry.get()
-    cfg = configparser.ConfigParser()
-    cfg.read(CONFIG_FILENAME)
-    cfg.set(section="Paths", option=parameter, value=value)
-    with open(CONFIG_FILENAME, "wb") as configfile:
-        cfg.write(configfile)
 
 
 def browse(mode: str, variable: tk.StringVar):

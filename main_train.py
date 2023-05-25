@@ -2,7 +2,6 @@ import multiprocessing
 from pathlib import Path
 from timeit import default_timer as timer
 import torch
-import yaml
 from torch import nn
 from torchvision import transforms
 import object_creator
@@ -10,12 +9,7 @@ import engine
 import utils
 
 # Open config files and set variables
-CONFIG_FILENAME = "config.yaml"
-SETTINGS_FILENAME = "settings.yaml"
-with open(SETTINGS_FILENAME, "r") as stream:
-    settings_dict = yaml.safe_load(stream)
-with open(CONFIG_FILENAME, "r") as stream:
-    config_dict = yaml.safe_load(stream)
+config_dict, settings_dict = utils.yamls_to_dict(("config.yaml", "settings.yaml"))
 NUM_EPOCHS = int(config_dict["NUM_EPOCHS"])
 LEARNING_RATE = int(config_dict["LEARNING_RATE"])
 BATCH_SIZE = int(config_dict["BATCH_SIZE"])
@@ -31,7 +25,7 @@ def main():
     device = utils.set_device()
 
     # Create model object and preset weights and transforms for transfer learning
-    weights, model, preprocess = data_setup.create_efficientnet_model(model_version=MODEL_VERSION, device=device)
+    weights, model, preprocess = object_creator.create_efficientnet_model(model_version=MODEL_VERSION, device=device)
 
     data_path = Path("data/")
     image_path = data_path / "TES"
@@ -48,7 +42,7 @@ def main():
     ])
 
     # Get dataloaders and the list of class names
-    train_dataloader, test_dataloader, class_names = data_setup.create_datasets_from_classes_in_folders(
+    train_dataloader, test_dataloader, class_names = object_creator.create_datasets_from_classes_in_folders(
         data_dir=str(image_path),
         transform=my_transform,
         batch_size=BATCH_SIZE)
@@ -61,7 +55,7 @@ def main():
 
     num_classes = len(class_names)
     # Change classifier to have number of output layers equal to number of classes
-    model.classifier = data_setup.change_classifier(in_features=1280, out_features=num_classes, device=device)
+    model.classifier = utils.change_classifier(in_features=1280, out_features=num_classes, device=device)
 
     # Set up loss function and optimizer
     loss_fn = nn.CrossEntropyLoss()
@@ -77,7 +71,7 @@ def main():
         loss_fn=loss_fn,
         epochs=NUM_EPOCHS,
         device=device,
-        writer=utils.create_writer(experiment_name=EXP_NAME, model_name=MODEL_NAME),
+        writer=object_creator.create_writer(experiment_name=EXP_NAME, model_name=MODEL_NAME),
     )
     end_time = timer()
     print(f"[INFO] Total training time: {end_time - start_time:.3f} seconds")
@@ -90,6 +84,6 @@ def main():
 
 
 if __name__ == "__main__":
-    if data_setup.NUM_WORKERS != 0:
+    if object_creator.NUM_WORKERS != 0:
         multiprocessing.freeze_support()  # Required for multiprocessing to work
     main()
